@@ -1,3 +1,26 @@
 :host {
     display: block;
 }
+
+/* With a middle column, the title and actions columns share the leftover space equally. */
+.c-col_fill {
+    flex: 1 1 0;
+    min-width: 0;
+    align-items: center;
+}
+
+.c-controls_end {
+    justify-content: flex-end;
+}
+
+.c-col-middle {
+    flex: 0 0 auto;
+    padding-inline: var(--slds-g-spacing-4, 1rem);
+}
+
+/* The subtitle can wrap onto more lines instead of being cut off with an ellipsis. */
+.c-subtitle {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}

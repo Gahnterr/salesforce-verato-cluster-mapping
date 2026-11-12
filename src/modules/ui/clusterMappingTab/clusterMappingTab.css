@@ -1,7 +1,45 @@
+:host {
+    display: block;
+    height: 100%;
+}
+
+/* Header on top, the two cards take whatever height is left. */
+.c-tab {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
 .c-layout {
+    padding: 0 24px 24px;
     display: grid;
     /* Fixed-width cluster list beside a flexible mapping card; no hook for this width. */
     grid-template-columns: 19.5rem 1fr;
+    /* One row exactly as tall as the space left, so the cards scroll inside instead of growing. */
+    grid-template-rows: minmax(0, 1fr);
     gap: var(--slds-g-spacing-4, 1rem);
-    align-items: start;
+    flex: 1 1 0;
+    min-height: 0;
+    /* Reserves the bottom gutter, matching the side ones. */
+    padding-bottom: var(--slds-g-spacing-4, 1rem);
+}
+
+/* Compact warning banner in the page header, same 600px width as the Log KPI cards. */
+.c-issues {
+    width: 37.5rem;
+}
+
+.c-issues lightning-card {
+    --slds-c-card-color-background: var(--slds-g-color-warning-container-1, #f9e3b6);
+    --slds-c-card-header-spacing-block-start: var(--slds-g-spacing-3, 0.75rem);
+    --slds-c-card-header-spacing-block-end: var(--slds-g-spacing-1, 0.25rem);
+    --slds-c-card-body-spacing-block-end: var(--slds-g-spacing-3, 0.75rem);
+    --slds-c-card-body-spacing-block-start: 0;
+}
+
+.c-issues__title {
+    /* Same size as the banner's body text (the card's title would otherwise be larger). */
+    font-size: var(--slds-g-font-size-base, 0.8125rem);
+    color: var(--slds-g-color-on-warning-1, #8c4b02);
+    font-weight: var(--slds-g-font-weight-6, 600);
 }

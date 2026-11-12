@@ -1,0 +1,160 @@
+<template>
+    <lightning-tabset variant="scoped">
+        <lightning-tab label="Visual Editor">
+            <template lwc:if={isOverview}>
+                <section class="slds-m-bottom_medium">
+                    <h4 class="c-section-title">Filtering</h4>
+                    <p class="c-section-help">Define which cluster values are {sentOrReceived}.</p>
+                    <div class="c-panel slds-m-top_x-small">
+                        <div class="c-panel__row slds-p-around_x-small">
+                            <span class="c-nav-row__text">
+                                <span class="c-section-title">Cardinality</span>
+                                <span class="c-section-help">{cardinalitySummary}</span>
+                            </span>
+                        </div>
+                        <div class="c-panel__row slds-p-around_x-small">
+                            <div class="slds-grid slds-grid_vertical-align-center slds-nowrap">
+                                <p class="slds-col slds-grow c-section-title">{activeOnlyLabel}</p>
+                                <lightning-input
+                                    class="slds-no-flex slds-m-left_x-small"
+                                    type="toggle"
+                                    label={activeOnlyLabel}
+                                    variant="label-hidden"
+                                    message-toggle-active=""
+                                    message-toggle-inactive=""
+                                    checked={filter.activeOnly}
+                                    onchange={handleActiveOnly}>
+                                </lightning-input>
+                            </div>
+                        </div>
+                        <button type="button" class="c-nav-row" data-view="filter" onclick={handleOpen}>
+                            <span class="c-nav-row__text">
+                                <span class="c-section-title">Filter By Attribute</span>
+                                <span class="c-section-help">{filterSummary}</span>
+                            </span>
+                            <lightning-icon icon-name="utility:chevronright" size="xx-small" alternative-text="Open attribute filter"></lightning-icon>
+                        </button>
+                    </div>
+                </section>
+                <section>
+                    <h4 class="c-section-title">Sorting</h4>
+                    <p class="c-section-help">Define the order in which values are {sentOrReceived}.</p>
+                    <div class="c-panel slds-m-top_x-small">
+                        <button type="button" class="c-nav-row" data-view="sort" onclick={handleOpen}>
+                            <span class="c-nav-row__text">
+                                <span class="c-section-title">Sort Attribute Values By</span>
+                                <span class="c-section-help">{sortSummary}</span>
+                            </span>
+                            <lightning-icon icon-name="utility:chevronright" size="xx-small" alternative-text="Open sorting"></lightning-icon>
+                        </button>
+                    </div>
+                </section>
+            </template>
+
+            <template lwc:else>
+                <div class="slds-grid slds-grid_vertical-align-center slds-m-bottom_small">
+                    <lightning-button-icon
+                        class="slds-grid slds-no-flex"
+                        icon-name="utility:chevronleft"
+                        variant="bare"
+                        alternative-text="Back to view filter"
+                        title="Back"
+                        onclick={handleBack}>
+                    </lightning-button-icon>
+                    <h4 class="c-section-title slds-m-left_x-small">{detailTitle}</h4>
+                </div>
+
+                <template lwc:if={isFilter}>
+                    <p class="c-section-help">Filter out all values of the current cluster that don't match the attribute value specified below.</p>
+                    <p class="c-section-help slds-m-bottom_small">If no attribute or value is selected, then nothing will be filtered out.</p>
+                    <lightning-combobox
+                        label="Filter Attribute"
+                        placeholder="Select an attribute"
+                        options={attributeOptions}
+                        value={filter.filter.attribute}
+                        onchange={handleFilterAttribute}>
+                    </lightning-combobox>
+                    <lightning-combobox
+                        lwc:if={hasValueOptions}
+                        class="slds-m-top_small"
+                        label="By This Value"
+                        placeholder="Select a value"
+                        options={valueOptions}
+                        value={filter.filter.value}
+                        disabled={noFilterAttribute}
+                        onchange={handleFilterValue}>
+                    </lightning-combobox>
+                    <lightning-input
+                        lwc:else
+                        class="slds-m-top_small"
+                        type={valueInputType}
+                        label="By This Value"
+                        placeholder="Enter a value"
+                        value={filter.filter.value}
+                        disabled={noFilterAttribute}
+                        onchange={handleFilterValue}>
+                    </lightning-input>
+                    <div class="slds-m-top_small slds-text-align_center">
+                        <lightning-button
+                            variant="base"
+                            label="Clear Filter"
+                            icon-name="utility:clear"
+                            disabled={isFilterEmpty}
+                            onclick={handleClearFilter}>
+                        </lightning-button>
+                    </div>
+                </template>
+
+                <template lwc:if={isSort}>
+                    <p class="c-section-help slds-m-bottom_small">Define the logic used to decide which values are shown first.</p>
+                    <lightning-radio-group
+                        name="sortBy"
+                        label="Sort by"
+                        variant="label-hidden"
+                        options={sortByOptions}
+                        value={filter.sort.by}
+                        onchange={handleSortBy}>
+                    </lightning-radio-group>
+                    <lightning-radio-group
+                        lwc:if={isSortBoth}
+                        class="slds-m-top_small"
+                        name="sortFirst"
+                        label="Sort First by"
+                        options={sortFirstOptions}
+                        value={filter.sort.first}
+                        onchange={handleSortFirst}>
+                    </lightning-radio-group>
+                    <section lwc:if={usesPriority} class="slds-m-top_medium">
+                        <h5 class="c-section-title">Source Priority Order</h5>
+                        <p class="c-section-help slds-m-bottom_x-small">Define the order in which values are {sentOrReceived} by their associated source.</p>
+                        <lightning-input
+                            type="checkbox"
+                            label="Include unprioritized sources sorted by most recently asserted"
+                            checked={filter.sort.includeUnprioritized}
+                            onchange={handleIncludeUnprioritized}>
+                        </lightning-input>
+                        <ui-view-filter-source-priority
+                            class="slds-show slds-m-top_small"
+                            sources={filter.sort.sources}
+                            onsourceschange={handleSources}>
+                        </ui-view-filter-source-priority>
+                    </section>
+                </template>
+            </template>
+        </lightning-tab>
+
+        <lightning-tab label="YAML Editor">
+            <lightning-textarea
+                class="c-yaml"
+                label="View filter as YAML"
+                variant="label-hidden"
+                value={yamlText}
+                spellcheck="false"
+                onchange={handleYaml}
+                onblur={handleYamlBlur}>
+            </lightning-textarea>
+            <p lwc:if={yamlError} class="slds-text-body_small slds-text-color_error slds-m-top_x-small" role="alert">{yamlError}</p>
+            <p lwc:else class="c-section-help slds-m-top_x-small">Edit the configuration as text, or paste YAML copied from another cluster. Changes apply as soon as the YAML is valid.</p>
+        </lightning-tab>
+    </lightning-tabset>
+</template>

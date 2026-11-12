@@ -15,6 +15,70 @@
     overflow-x: auto;
 }
 
-.c-skipped__text {
-    color: var(--slds-g-color-warning-1, #8c4b02);
+/* The KPI cards share a fixed 600px container; no hook exists for this width. */
+.c-kpis {
+    display: flex;
+    gap: var(--slds-g-spacing-3, 0.75rem);
+    width: 37.5rem;
+}
+
+.c-kpi {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: var(--slds-g-spacing-3, 0.75rem);
+    border: var(--slds-g-sizing-border-1, 1px) solid transparent;
+    border-radius: var(--slds-g-radius-border-3, 0.75rem);
+    background: var(--slds-g-color-surface-container-1, #ffffff);
+    cursor: pointer;
+    text-align: left;
+}
+
+.c-kpi_active {
+    border-color: var(--slds-g-color-accent-1, #066afe);
+}
+
+.c-kpi__label {
+    display: flex;
+    align-items: center;
+    gap: var(--slds-g-spacing-2, 0.5rem);
+}
+
+/* All four icons are 32px circles; standard icons are square by default. */
+.c-kpi__icon {
+    border-radius: 50%;
+}
+
+/* The icons take their colors from the lightning-icon styling hooks: container background and glyph. */
+.c-kpi__icon_pending {
+    --slds-c-icon-color-background: var(--slds-g-color-info-container-1, #d8e6fe);
+    --slds-c-icon-color-foreground: var(--slds-g-color-on-info-1, #0b5cab);
+}
+
+.c-kpi__icon_sent {
+    --slds-c-icon-color-background: var(--slds-g-color-success-container-1, #acf3e4);
+    --slds-c-icon-color-foreground: var(--slds-g-color-on-success-1, #056764);
+}
+
+.c-kpi__icon_skipped {
+    --slds-c-icon-color-background: var(--slds-g-color-warning-container-1, #f9e3b6);
+    --slds-c-icon-color-foreground: var(--slds-g-color-on-warning-1, #8c4b02);
+}
+
+.c-kpi__icon_failed {
+    --slds-c-icon-color-background: var(--slds-g-color-error-1, #b60554);
+    --slds-c-icon-color-foreground: var(--slds-g-color-neutral-base-100, #ffffff);
+}
+
+.c-kpi__name {
+    font-weight: var(--slds-g-font-weight-7, 700);
+    color: var(--slds-g-color-on-surface-1, #5c5c5c);
+}
+
+.c-kpi__count {
+    align-self: flex-end;
+    font-size: var(--slds-g-font-scale-4, 1.5rem);
+    font-weight: var(--slds-g-font-weight-6, 600);
+    color: var(--slds-g-color-on-surface-3, #03234d);
 }

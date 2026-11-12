@@ -1,0 +1,22 @@
+<template>
+    <div class={formElementClass}>
+        <label class={labelClass}>{label}</label>
+        <div class="slds-form-element__control">
+            <lightning-base-combobox
+                autocomplete="none"
+                aria-invalid={ariaInvalid}
+                placeholder={placeholder}
+                items={items}
+                input-text={inputText}
+                input-label={label}
+                input-icon-size="xx-small"
+                input-icon-name="utility:down"
+                variant={variant}
+                ontextinput={handleTextInput}
+                onselect={handleSelect}
+                onblur={handleBlur}>
+            </lightning-base-combobox>
+        </div>
+        <div lwc:if={errorMessage} class="slds-form-element__help" role="alert">{errorMessage}</div>
+    </div>
+</template>

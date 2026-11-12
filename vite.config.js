@@ -55,6 +55,12 @@ export default defineConfig({
           path: path.resolve('./src/build/shim/gateComboboxElementInternalsClosed.js'),
         },
         {
+          // Private to lightning-base-components (not in its `expose` list); ui-searchable-combobox
+          // builds on it, since lightning-combobox itself can't filter its options.
+          name: 'lightning/baseCombobox',
+          path: path.resolve('./node_modules/lightning-base-components/src/lightning/baseCombobox/baseCombobox.js'),
+        },
+        {
           npm: 'lightning-base-components',
         },
       ],

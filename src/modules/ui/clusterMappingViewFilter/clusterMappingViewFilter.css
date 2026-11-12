@@ -1,0 +1,71 @@
+:host {
+    display: block;
+}
+
+/* Section titles and their help text, as in the design: 13px semibold over 12px weak text. */
+.c-section-title {
+    display: block;
+    font-size: var(--slds-g-font-size-base, 0.8125rem);
+    font-weight: var(--slds-g-font-weight-6, 600);
+    color: var(--slds-g-color-on-surface-2, #2e2e2e);
+}
+
+.c-section-help {
+    display: block;
+    font-size: var(--slds-g-font-scale-neg-1, 0.75rem);
+    color: var(--slds-g-color-on-surface-1, #5c5c5c);
+}
+
+/* A grey panel of stacked rows; the rows are divided by a line. */
+.c-panel {
+    background-color: var(--slds-g-color-surface-container-2, #f3f3f3);
+    border-radius: var(--slds-g-radius-border-2, 0.5rem);
+    overflow: hidden;
+}
+
+.c-panel__row {
+    border-bottom: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, #c9c9c9);
+}
+
+/* A row that opens a section of the editor: its text on the left, a chevron on the right. */
+.c-nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--slds-g-spacing-2, 0.5rem);
+    inline-size: 100%;
+    padding: var(--slds-g-spacing-2, 0.5rem);
+    background: none;
+    border: 0;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+}
+
+.c-nav-row.c-panel__row {
+    border-bottom: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, #c9c9c9);
+}
+
+.c-nav-row:hover,
+.c-nav-row:focus-visible {
+    background-color: var(--slds-g-color-surface-container-3, #e5e5e5);
+}
+
+.c-nav-row__text {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+}
+
+/*
+ * No base component is a code editor, so the YAML editor is a text area in an SLDS 2 dark scheme.
+ * The hooks color the field itself; global.css (.c-yaml) sets its monospace font.
+ */
+.c-yaml {
+    --slds-c-textarea-color-background: var(--slds-g-color-surface-inverse-1, #03234d);
+    --slds-c-textarea-color-background-focus: var(--slds-g-color-surface-inverse-1, #03234d);
+    --slds-c-textarea-text-color: var(--slds-g-color-on-surface-inverse-1, #ffffff);
+    --slds-c-textarea-text-color-focus: var(--slds-g-color-on-surface-inverse-1, #ffffff);
+    --slds-c-textarea-color-border: var(--slds-g-color-border-inverse-1, #444444);
+    --slds-c-textarea-sizing-min-height: 20rem;
+}

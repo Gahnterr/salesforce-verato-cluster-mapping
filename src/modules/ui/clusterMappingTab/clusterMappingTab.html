@@ -1,28 +1,73 @@
 <template>
-    <div>
+    <div class="c-tab">
         <ui-page-header
             variant="record-home"
-            icon-name="standard:account"
+            icon-name="standard:data_mapping"
             title="Verato Cluster Mapping"
-            show-subtitle>
+            show-subtitle
+            show-middle={hasIssues}>
             <span slot="subtitle">
                 <span class="slds-m-right_xx-small">Configure the demographic data to be mapped and sent between Salesforce and Verato Cloud MDM.</span>
                 <lightning-formatted-url value={learnMoreUrl} label="Learn more." target="_blank"></lightning-formatted-url>
             </span>
+            <div slot="middle" lwc:if={hasIssues} class="c-issues">
+                <lightning-card>
+                    <div slot="title" class="slds-grid slds-grid_vertical-align-center">
+                        <lightning-icon
+                            class="slds-m-right_x-small"
+                            icon-name="utility:warning"
+                            variant="warning"
+                            size="x-small"
+                            alternative-text="Warning">
+                        </lightning-icon>
+                        <span class="c-issues__title">{issuesTitle}</span>
+                    </div>
+                    <p class="slds-p-horizontal_medium">Nothing has been saved yet. Ensure all fields are correctly filled and try again.</p>
+                </lightning-card>
+            </div>
             <div slot="actions" class="slds-grid slds-grid_vertical slds-grid_vertical-align-end">
-                <lightning-button-icon
-                    icon-name="utility:refresh"
-                    variant="border-filled"
-                    alternative-text="Refresh all data"
-                    title="Refresh all data"
-                    onclick={refresh}>
-                </lightning-button-icon>
-                <ui-relative-time
-                    class="slds-text-body_small slds-text-color_weak slds-m-top_x-small"
-                    prefix="Last refreshed"
-                    icon-name="utility:refresh"
-                    timestamp={lastRefreshed}>
-                </ui-relative-time>
+                <div class="slds-grid slds-grid_vertical-align-center">
+                    <lightning-button-icon
+                        icon-name="utility:refresh"
+                        variant="border-filled"
+                        alternative-text="Refresh all data"
+                        title="Refresh all data"
+                        onclick={refresh}>
+                    </lightning-button-icon>
+                    <lightning-button-group lwc:if={showChangeActions} class="slds-m-left_x-small">
+                        <lightning-button-icon
+                            icon-name="utility:undo"
+                            variant="border-filled"
+                            alternative-text="Undo"
+                            title="Undo"
+                            disabled={cannotUndo}
+                            onclick={handleUndo}>
+                        </lightning-button-icon>
+                        <lightning-button-icon
+                            icon-name="utility:redo"
+                            variant="border-filled"
+                            alternative-text="Redo"
+                            title="Redo"
+                            disabled={cannotRedo}
+                            onclick={handleRedo}>
+                        </lightning-button-icon>
+                    </lightning-button-group>
+                    <lightning-button-group lwc:if={hasUnsavedChanges} class="slds-m-left_x-small">
+                        <lightning-button label={discardLabel} onclick={handleDiscard}></lightning-button>
+                        <lightning-button
+                            variant="brand"
+                            label={saveLabel}
+                            onclick={handleSave}>
+                        </lightning-button>
+                    </lightning-button-group>
+                </div>
+                <div class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">
+                    <ui-relative-time prefix="Last refreshed" timestamp={lastRefreshed}></ui-relative-time>
+                    <template lwc:if={lastEdit}>
+                        <span class="slds-m-horizontal_xx-small">・</span>
+                        <ui-relative-time prefix={lastEditPrefix} timestamp={lastEdit.editedAt}></ui-relative-time>
+                    </template>
+                </div>
             </div>
         </ui-page-header>
 
@@ -33,7 +78,14 @@
                 selected-id={selectedId}
                 onclusterselect={handleClusterSelect}>
             </ui-cluster-tree>
-            <ui-cluster-mapping-card cluster={selectedCluster} attributes={selectedAttributes}></ui-cluster-mapping-card>
+            <ui-cluster-mapping-card
+                cluster={selectedCluster}
+                attributes={selectedAttributes}
+                nested-clusters={nestedClusters}
+                has-rules-before={hasRulesBefore}
+                has-rules-after={hasRulesAfter}
+                onmappingchange={handleMappingChange}>
+            </ui-cluster-mapping-card>
         </div>
     </div>
 </template>

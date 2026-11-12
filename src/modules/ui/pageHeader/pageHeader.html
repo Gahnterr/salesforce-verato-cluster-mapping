@@ -1,9 +1,9 @@
 <template>
     <div class={computedHeaderClass} aria-label={label}>
 
-        <!-- Row 1: Icon + Title + Actions -->
+        <!-- Row 1: Icon + Title + (optional middle) + Actions -->
         <div class="slds-page-header__row">
-            <div class="slds-page-header__col-title">
+            <div class={titleColClass}>
                 <template lwc:if={showBreadcrumbs}>
                     <lightning-breadcrumbs>
                         <template for:each={breadcrumbs} for:item="crumb">
@@ -45,14 +45,19 @@
                             <p class="slds-page-header__name-meta">{metaText}</p>
                         </template>
                         <template lwc:if={showSubtitle}>
-                            <p class="slds-page-header__name-meta"><slot name="subtitle"></slot></p>
+                            <p class="slds-page-header__name-meta c-subtitle"><slot name="subtitle"></slot></p>
                         </template>
                     </div>
                 </div>
             </div>
+            <template lwc:if={showMiddle}>
+                <div class="c-col-middle">
+                    <slot name="middle"></slot>
+                </div>
+            </template>
             <template lwc:if={showActions}>
-                <div class="slds-page-header__col-actions">
-                    <div class="slds-page-header__controls">
+                <div class={actionsColClass}>
+                    <div class={actionsControlsClass}>
                         <div class="slds-page-header__control">
                             <slot name="actions"></slot>
                         </div>

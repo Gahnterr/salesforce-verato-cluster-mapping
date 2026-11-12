@@ -20,6 +20,8 @@ export default class PageHeader extends LightningElement {
     @api metaText = '';
     @api hideDetails = false;
     @api showSubtitle = false;
+    /** Adds a middle column between the title and the actions, filled through the `middle` slot. */
+    @api showMiddle = false;
 
     _variant = VARIANT_BASE;
     _fields = [];
@@ -102,6 +104,19 @@ export default class PageHeader extends LightningElement {
 
     get showBreadcrumbs() {
         return this._breadcrumbs.length > 0;
+    }
+
+    /** With a middle column, the title and actions columns share the leftover space equally. */
+    get titleColClass() {
+        return this.showMiddle ? 'slds-page-header__col-title c-col_fill' : 'slds-page-header__col-title';
+    }
+
+    get actionsColClass() {
+        return this.showMiddle ? 'slds-page-header__col-actions c-col_fill' : 'slds-page-header__col-actions';
+    }
+
+    get actionsControlsClass() {
+        return this.showMiddle ? 'slds-page-header__controls c-controls_end' : 'slds-page-header__controls';
     }
 
     get showActions() {

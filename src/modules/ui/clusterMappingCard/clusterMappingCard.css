@@ -1,0 +1,49 @@
+:host {
+    display: block;
+    min-height: 0;
+}
+
+/*
+ * The card's own markup can't be styled from here, so the card host is a grid: its article
+ * stretches to the host's height. global.css (.c-mapping-card) passes that height down to the
+ * card body, so only .c-mapping-scroll scrolls and the card header stays put. The scroller
+ * carries the horizontal padding, which puts its scroll bar at the card's edge.
+ */
+lightning-card {
+    display: grid;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Two columns: the mapping form (direction, child object, grid) takes the room, the view filter has a fixed 400px. Each scrolls on its own. */
+.c-mapping-layout {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.c-mapping-scroll {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: auto;
+}
+
+.c-view-filter-panel {
+    flex: 0 0 400px;
+    overflow: auto;
+}
+
+ui-cluster-mapping-form {
+    display: block;
+}
+
+/* A column's subheading: its standard icon, then the title. */
+.c-column-heading {
+    display: flex;
+    align-items: center;
+    gap: var(--slds-g-spacing-2, 0.5rem);
+}
+
+.slds-card__header {
+    padding-bottom: 8px;
+}

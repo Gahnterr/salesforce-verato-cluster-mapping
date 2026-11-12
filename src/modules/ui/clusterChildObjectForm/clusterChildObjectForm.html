@@ -1,0 +1,44 @@
+<template>
+    <h3 class="slds-text-heading_small slds-m-bottom_small slds-text-color_default">Multi-Value Handling</h3>
+    <lightning-input
+        type="toggle"
+        label="Enable multi-value handling"
+        checked={isEnabled}
+        message-toggle-active=""
+        message-toggle-inactive=""
+        onchange={handleToggle}>
+    </lightning-input>
+    <p class="c-section-help">This option affects cardinality for this cluster. Enable it to allow storing multiple values per cluster.</p>
+    <template lwc:if={isEnabled}>
+        <div class="c-fields slds-m-top_small">
+        <lightning-input
+            label="Child object API name"
+            value={mapping.childObject}
+            data-field="childObject"
+            onchange={handleField}>
+        </lightning-input>
+        <lightning-input
+            label="Child relationship name"
+            value={mapping.childRelationship}
+            data-field="childRelationship"
+            onchange={handleField}>
+        </lightning-input>
+        <lightning-combobox
+            label="Lookup to root"
+            placeholder="Select an Option"
+            options={lookupOptions}
+            value={mapping.lookupToRoot}
+            data-field="lookupToRoot"
+            onchange={handleField}>
+        </lightning-combobox>
+        <lightning-combobox
+            label="Match key (inbound) (optional)"
+            placeholder="Select an Option"
+            options={matchKeyOptions}
+            value={mapping.matchKey}
+            data-field="matchKey"
+            onchange={handleField}>
+        </lightning-combobox>
+        </div>
+    </template>
+</template>

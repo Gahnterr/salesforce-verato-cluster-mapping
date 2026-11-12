@@ -1,0 +1,82 @@
+<template>
+    <div class="c-search">
+        <lightning-input
+            type="search"
+            label="Add a source to prioritize"
+            variant="label-hidden"
+            placeholder="Add a source to prioritize…"
+            value={searchText}
+            onfocus={handleFocus}
+            onblur={handleBlur}
+            onclick={handleClick}
+            onkeydown={handleKeyDown}
+            onchange={handleSearch}>
+        </lightning-input>
+        <div lwc:if={isOpen} class="slds-dropdown slds-dropdown_fluid slds-dropdown_length-10" onmousedown={handleMenuMouseDown}>
+            <p lwc:if={isShort} class="c-message c-help" role="status">Type 3 or more characters to search for a source</p>
+            <div lwc:elseif={isSearching} class="c-message c-searching" role="status">
+                <span class="c-spinner">
+                    <lightning-spinner size="x-small" alternative-text="Searching"></lightning-spinner>
+                </span>
+                <span>Searching…</span>
+            </div>
+            <div lwc:elseif={isEmpty} class="c-message" role="status">
+                <h6 class="c-title">No Sources Found</h6>
+                <p class="c-help">Make sure you're typing the correct name or try with a different name</p>
+            </div>
+            <ul lwc:else class="slds-listbox slds-listbox_vertical" role="listbox" aria-label="Sources">
+                <template for:each={menuRows} for:item="row">
+                    <li key={row.name} role="presentation" class="slds-listbox__item">
+                        <div
+                            class={row.className}
+                            role="option"
+                            aria-selected={row.isActive}
+                            data-name={row.name}
+                            data-index={row.index}
+                            data-active={row.isActive}
+                            onmouseenter={handleOptionHover}
+                            onclick={handleOptionClick}>
+                            <span class="slds-media__body">
+                                <span class="slds-truncate" title={row.name}>{row.name}</span>
+                            </span>
+                        </div>
+                    </li>
+                </template>
+            </ul>
+        </div>
+    </div>
+
+    <div class="slds-m-top_small">
+        <div class="slds-grid slds-grid_vertical-align-center">
+            <h5 class="c-title">Sources Prioritized</h5>
+            <lightning-helptext class="slds-m-left_xx-small" content="Drag and drop sources to reorder them"></lightning-helptext>
+        </div>
+        <p class="c-help">{countText}</p>
+    </div>
+    <ul class="c-list slds-m-top_x-small">
+        <li lwc:if={noPrioritized} class="c-list__empty c-help">No sources prioritized yet.</li>
+        <template for:each={prioritizedRows} for:item="row">
+            <li
+                key={row.name}
+                class={row.className}
+                draggable={row.isArmed}
+                data-name={row.name}
+                ondragstart={handleDragStart}
+                ondragover={handleDragOver}
+                ondrop={handleDrop}
+                ondragend={handleDragEnd}>
+                <span class="c-handle" data-name={row.name} onmousedown={handleArm} onmouseup={handleDisarm}>
+                    <lightning-icon icon-name="utility:drag_and_drop" size="xx-small" alternative-text={row.dragText}></lightning-icon>
+                </span>
+                <span class="c-list__name">{row.name}</span>
+                <lightning-button-icon
+                    icon-name="utility:delete"
+                    alternative-text={row.removeText}
+                    title="Remove"
+                    data-name={row.name}
+                    onclick={handleRemove}>
+                </lightning-button-icon>
+            </li>
+        </template>
+    </ul>
+</template>

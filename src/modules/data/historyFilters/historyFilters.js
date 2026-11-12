@@ -17,8 +17,10 @@ export const PERIODS = [
 ];
 
 export const STATUSES = [
+    { value: 'pending', label: 'Pending' },
     { value: 'sent', label: 'Sent' },
-    { value: 'skipped', label: 'Skipped' }
+    { value: 'skipped', label: 'Skipped' },
+    { value: 'failed', label: 'Failed' }
 ];
 
 export const ALL = 'all';

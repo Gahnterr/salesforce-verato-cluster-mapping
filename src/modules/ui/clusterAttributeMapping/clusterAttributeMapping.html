@@ -1,0 +1,375 @@
+<template>
+    <div class="slds-grid slds-grid_vertical-align-center slds-m-bottom_x-small">
+        <h3 class="slds-text-heading_small slds-text-color_default">Attributes</h3>
+        <span class="c-attributes-spacer"></span>
+        <span lwc:if={hasRows} class="c-attributes-toolbar">
+            <template lwc:if={hasSelection}>
+                <span class="slds-text-body_regular">{selectedLabel}</span>
+                <lightning-button label="Clear" variant="base" onclick={handleClearSelection}></lightning-button>
+                <span class="c-attributes-toolbar__divider slds-border_left"></span>
+                <lightning-button lwc:if={showGroupAction} label="Group Attributes" onclick={handleGroup}></lightning-button>
+                <lightning-button lwc:if={showUngroupAction} label="Ungroup" onclick={handleUngroup}></lightning-button>
+                <lightning-button label="Delete" variant="destructive-text" onclick={handleDeleteSelected}></lightning-button>
+            </template>
+            <template lwc:else>
+                <lightning-button label="Remove All Attributes" variant="base" onclick={handleRemoveAll}></lightning-button>
+            </template>
+        </span>
+    </div>
+    <div class="slds-box">
+        <template lwc:if={hasRows}>
+            <div class="c-grid">
+                <span class="slds-form-element__label c-direction-header">
+                    <span class="slds-checkbox">
+                        <input
+                            type="checkbox"
+                            id="select-all"
+                            data-select-all
+                            checked={allSelected}
+                            disabled={isSelectAllDisabled}
+                            onchange={handleSelectAll} />
+                        <label class="slds-checkbox__label" for="select-all">
+                            <span class="slds-checkbox_faux"></span>
+                            <span class="slds-assistive-text">Select all attributes</span>
+                        </label>
+                    </span>
+                </span>
+                <span></span>
+                <span class="slds-form-element__label">Verato Attribute</span>
+                <span class="slds-form-element__label c-direction-header">
+                    <lightning-icon lwc:if={showArrowLeft} icon-name="utility:arrow_left" size="x-small" alternative-text="Outbound"></lightning-icon>
+                    <lightning-icon lwc:if={showArrowRight} icon-name="utility:arrow_right" size="x-small" alternative-text="Inbound"></lightning-icon>
+                </span>
+                <span class="slds-form-element__label">Salesforce</span>
+                <span></span>
+                <template for:each={entries} for:item="entry">
+                    <div key={entry.key} class="c-group">
+                        <template lwc:if={entry.row}>
+                        <div
+                            class={entry.row.className}
+                            draggable={entry.row.isArmed}
+                            data-key={entry.row.key}
+                            data-kind="row"
+                            data-name={entry.row.name}
+                            ondragstart={handleDragStart}
+                            ondragover={handleDragOver}
+                            ondrop={handleDrop}
+                            ondragend={handleDragEnd}>
+                            <div class="c-check-cell">
+                                <lightning-input
+                                    type="checkbox"
+                                    variant="label-hidden"
+                                    label={entry.row.name}
+                                    checked={entry.row.isSelected}
+                                    data-key={entry.row.key}
+                                    onchange={handleSelectRow}>
+                                </lightning-input>
+                            </div>
+                            <div class="c-lead-cell">
+                                <span class="c-handle" data-key={entry.row.key} onmousedown={handleArm} onmouseup={handleDisarm}>
+                                    <lightning-icon icon-name="utility:drag_and_drop" size="xx-small" alternative-text="Drag to move"></lightning-icon>
+                                </span>
+                            </div>
+                            <div class="slds-grid slds-grid_vertical-align-center verato-attribute-cell">
+                                <lightning-helptext lwc:if={entry.row.typeIcon} class="slds-m-right_x-small" icon-name={entry.row.typeIcon} content={entry.row.typeLabel}></lightning-helptext>
+                                <lightning-badge lwc:else class="slds-m-right_x-small" label={entry.row.typeLabel}></lightning-badge>
+                                <span title={entry.row.name}>{entry.row.name}</span>
+                                <lightning-helptext lwc:if={entry.row.isCodeSet} class="slds-m-left_xx-small" content={entry.row.codeSetText}></lightning-helptext>
+                                <lightning-helptext lwc:if={entry.row.exampleText} class="slds-m-left_xx-small" content={entry.row.exampleText}></lightning-helptext>
+                            </div>
+                            <div class="slds-grid slds-grid_vertical-align-center c-direction-cell">
+                                <lightning-icon lwc:if={showArrowLeft} icon-name="utility:arrow_left" size="x-small" alternative-text=""></lightning-icon>
+                                <lightning-icon lwc:if={showArrowRight} icon-name="utility:arrow_right" size="x-small" alternative-text=""></lightning-icon>
+                            </div>
+                            <div class="slds-grid slds-grid_vertical-align-start c-value-cell">
+                                <ui-searchable-combobox
+                                    class={entry.row.fieldClass}
+                                    label="Salesforce field"
+                                    variant="label-hidden"
+                                    placeholder="Map Attribute to…"
+                                    options={entry.row.fieldOptions}
+                                    value={entry.row.selection}
+                                    data-name={entry.row.name}
+                                    data-kind="field"
+                                    data-value-input                                    
+                                    onchange={handleField}>
+                                </ui-searchable-combobox>
+                                <template lwc:if={entry.row.isStatic}>
+                                    <template lwc:if={entry.row.isCodeSet}>
+                                        <lightning-combobox
+                                            class="slds-col"
+                                            label="Static value"
+                                            variant="label-hidden"
+                                            placeholder="Select a value..."
+                                            options={entry.row.staticOptions}
+                                            value={entry.row.staticValue}
+                                            data-name={entry.row.name}
+                                            data-kind="static"
+                                            data-value-input
+                                            onchange={handleStaticValue}>
+                                        </lightning-combobox>
+                                    </template>
+                                    <template lwc:else>
+                                        <lightning-input
+                                            class="slds-col"
+                                            label="Static value"
+                                            variant="label-hidden"
+                                            placeholder="Enter a static value..."
+                                            value={entry.row.staticValue}
+                                            data-name={entry.row.name}
+                                            data-kind="static"
+                                            data-value-input
+                                            onchange={handleStaticValue}>
+                                        </lightning-input>
+                                    </template>
+                                </template>
+                            </div>
+                            <lightning-button-icon
+                                icon-name="utility:delete"
+                                variant="border-filled"
+                                alternative-text="Delete attribute mapping"
+                                title="Delete attribute mapping"
+                                data-name={entry.row.name}
+                                onclick={handleDelete}>
+                            </lightning-button-icon>
+                        </div>
+                        </template>
+                        <template lwc:if={entry.group}>
+                            <div
+                                class={entry.group.className}
+                                data-key={entry.group.key}
+                                data-kind="group"
+                                data-group={entry.group.id}
+                                ondragover={handleDragOver}
+                                ondrop={handleDrop}>
+                                <div class="c-check-cell">
+                                    <lightning-input
+                                        type="checkbox"
+                                        variant="label-hidden"
+                                        label="Select group"
+                                        checked={entry.group.isSelected}
+                                        data-key={entry.group.key}
+                                        onchange={handleSelectRow}>
+                                    </lightning-input>
+                                </div>
+                                <div class="c-lead-cell">
+                                    <lightning-button-icon
+                                        icon-name={entry.group.chevronIcon}
+                                        variant="bare"
+                                        alternative-text={entry.group.chevronLabel}
+                                        title={entry.group.chevronLabel}
+                                        aria-expanded={entry.group.isExpanded}
+                                        data-group={entry.group.id}
+                                        onclick={handleToggleGroup}>
+                                    </lightning-button-icon>
+                                </div>
+                                <div class="c-group-name-cell">
+                                    <lightning-input
+                                        label="Group name"
+                                        variant="label-hidden"
+                                        placeholder="Give a name to this group…"
+                                        value={entry.group.name}
+                                        data-group-name={entry.group.id}
+                                        onchange={handleGroupName}>
+                                    </lightning-input>
+                                </div>
+                                <div class="slds-grid slds-grid_vertical-align-center c-direction-cell">
+                                    <lightning-icon lwc:if={showArrowLeft} icon-name="utility:arrow_left" size="x-small" alternative-text=""></lightning-icon>
+                                    <lightning-icon lwc:if={showArrowRight} icon-name="utility:arrow_right" size="x-small" alternative-text=""></lightning-icon>
+                                </div>
+                                <div class="slds-grid slds-grid_vertical-align-start c-value-cell">
+                                    <ui-searchable-combobox
+                                        class={entry.group.fieldClass}
+                                        label="Salesforce field"
+                                        variant="label-hidden"
+                                        placeholder="Map Group to..."
+                                        options={entry.group.fieldOptions}
+                                        value={entry.group.selection}
+                                        data-name={entry.group.valueKey}
+                                        data-kind="field"
+                                        data-value-input
+                                        onchange={handleField}>
+                                    </ui-searchable-combobox>
+                                    <lightning-input
+                                        lwc:if={entry.group.isStatic}
+                                        class="slds-col"
+                                        label="Static value"
+                                        variant="label-hidden"
+                                        placeholder="Enter a static value..."
+                                        value={entry.group.staticValue}
+                                        data-name={entry.group.valueKey}
+                                        data-kind="static"
+                                        data-value-input
+                                        onchange={handleStaticValue}>
+                                    </lightning-input>
+                                </div>
+                                <lightning-button-icon
+                                    icon-name="utility:delete"
+                                    variant="border-filled"
+                                    alternative-text="Delete group mapping"
+                                    title="Delete group mapping"
+                                    data-name={entry.group.valueKey}
+                                    onclick={handleDelete}>
+                                </lightning-button-icon>
+                            </div>
+                            <template lwc:if={entry.group.isExpanded}>
+                                <template for:each={entry.group.members} for:item="member">
+                                    <div
+                                        key={member.key}
+                                        class={member.className}
+                                        draggable={member.isArmed}
+                                        data-key={member.key}
+                                        data-kind="member"
+                                        data-group={member.groupId}
+                                        data-name={member.name}
+                                        ondragstart={handleDragStart}
+                                        ondragover={handleDragOver}
+                                        ondrop={handleDrop}
+                                        ondragend={handleDragEnd}>
+                                        <div></div>
+                                        <div class="c-lead-cell">
+                                            <span class="c-handle" data-key={member.key} onmousedown={handleArm} onmouseup={handleDisarm}>
+                                                <lightning-icon icon-name="utility:drag_and_drop" size="xx-small" alternative-text="Drag to move"></lightning-icon>
+                                            </span>
+                                        </div>
+                                        <div class="slds-grid slds-grid_vertical-align-center verato-attribute-cell">
+                                            <lightning-helptext lwc:if={member.typeIcon} class="slds-m-right_x-small" icon-name={member.typeIcon} content={member.typeLabel}></lightning-helptext>
+                                            <lightning-badge lwc:else class="slds-m-right_x-small" label={member.typeLabel}></lightning-badge>
+                                            <span title={member.name}>{member.name}</span>
+                                            <lightning-helptext lwc:if={member.exampleText} class="slds-m-left_xx-small" content={member.exampleText}></lightning-helptext>
+                                            <template lwc:if={member.hasSeparator}>
+                                                <span class="slds-m-horizontal_x-small">+</span>
+                                                <lightning-combobox
+                                                    class="c-separator-select"
+                                                    label="Separator"
+                                                    variant="label-hidden"
+                                                    options={separatorOptions}
+                                                    value={member.separator}
+                                                    data-group={member.groupId}
+                                                    data-name={member.name}
+                                                    onchange={handleSeparator}>
+                                                </lightning-combobox>
+                                            </template>
+                                        </div>
+                                        <div></div>
+                                        <div class="slds-grid slds-grid_vertical-align-start slds-wrap c-value-cell">
+                                            <template lwc:if={member.hasMethod}>
+                                                <lightning-combobox
+                                                    class="slds-col"
+                                                    label="Mapping method"
+                                                    variant="label-hidden"
+                                                    placeholder="Select a mapping method…"
+                                                    options={member.methodOptions}
+                                                    value={member.method}
+                                                    data-group={member.groupId}
+                                                    data-name={member.name}
+                                                    data-method-input="method"
+                                                    onchange={handleMethod}>
+                                                </lightning-combobox>
+                                                <lightning-helptext class="slds-no-flex c-method-help" content={member.methodHelp}></lightning-helptext>
+                                                <lightning-input
+                                                    lwc:if={member.isRegex}
+                                                    class="slds-size_1-of-1 slds-m-top_x-small"
+                                                    label="Custom Regular Expression"
+                                                    variant="label-hidden"
+                                                    placeholder="Enter a regular expression…"
+                                                    value={member.regex}
+                                                    data-group={member.groupId}
+                                                    data-name={member.name}
+                                                    data-method-input="regex"
+                                                    onchange={handleRegex}>
+                                                </lightning-input>
+                                            </template>
+                                        </div>
+                                        <lightning-button-icon
+                                            icon-name="utility:delete"
+                                            variant="border-filled"
+                                            alternative-text="Remove attribute from group"
+                                            title="Remove attribute from group"
+                                            data-group={member.groupId}
+                                            data-name={member.name}
+                                            onclick={handleDeleteMember}>
+                                        </lightning-button-icon>
+                                    </div>
+                                </template>
+                                <div
+                                    class={entry.group.footerClass}
+                                    data-key={entry.group.footerKey}
+                                    data-kind="footer"
+                                    data-group={entry.group.id}
+                                    ondragover={handleDragOver}
+                                    ondrop={handleDrop}>
+                                    <div></div>
+                                    <div></div>
+                                    <div class="c-footer-cell">
+                                        <lightning-button-menu
+                                            label="Add Attribute…"
+                                            variant="bare"
+                                            alternative-text="Add attribute to map"
+                                            menu-alignment="auto-left"
+                                            disabled={isAddDisabled}
+                                            data-group={entry.group.id}
+                                            onselect={handleAddToGroup}>
+                                            <template for:each={availableAttributes} for:item="attribute">
+                                                <lightning-menu-item key={attribute.name} value={attribute.name} label={attribute.label} prefix-icon-name={attribute.icon}></lightning-menu-item>
+                                            </template>
+                                            <template lwc:if={showAddAll}>
+                                                <lightning-menu-divider></lightning-menu-divider>
+                                                <lightning-menu-item value={addAllValue} label="Add All Remaining Attributes"></lightning-menu-item>
+                                            </template>
+                                        </lightning-button-menu>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </template>
+        <template lwc:else>
+            <ui-empty-state
+                title="No Attributes Mapped"
+                message="Add an attribute and select the Salesforce field or static value that you want to map.">
+                <div slot="actions" class="slds-grid slds-grid_align-center slds-grid_vertical-align-center slds-m-top_medium">
+                    <div class="c-primary-action">
+                        <lightning-button-menu
+                            label="Add Attribute…"
+                            alternative-text="Add attribute"
+                            menu-alignment="auto-left"
+                            disabled={isAddDisabled}
+                            onselect={handleAdd}>
+                            <template for:each={availableAttributes} for:item="attribute">
+                                <lightning-menu-item key={attribute.name} value={attribute.name} label={attribute.label} prefix-icon-name={attribute.icon}></lightning-menu-item>
+                            </template>
+                            <template lwc:if={showAddAll}>
+                                <lightning-menu-divider></lightning-menu-divider>
+                                <lightning-menu-item value={addAllValue} label="Add all attributes"></lightning-menu-item>
+                            </template>
+                        </lightning-button-menu>
+                    </div>
+                    <lightning-button class="slds-m-left_x-small" label="Add Group" icon-name="utility:add" onclick={handleAddGroup}></lightning-button>
+                </div>
+            </ui-empty-state>
+            <p lwc:if={gridIssue} class="slds-text-align_center slds-text-color_error" role="alert">{gridIssue}</p>
+        </template>
+        <div lwc:if={hasRows} class="slds-grid slds-grid_vertical-align-center slds-m-top_small">
+            <span title={addTitle}>
+                <lightning-button-menu
+                    label="Add Attribute…"
+                    alternative-text="Add attribute"
+                    menu-alignment="auto-left"
+                    disabled={isAddDisabled}
+                    onselect={handleAdd}>
+                    <template for:each={availableAttributes} for:item="attribute">
+                        <lightning-menu-item key={attribute.name} value={attribute.name} label={attribute.label} prefix-icon-name={attribute.icon}></lightning-menu-item>
+                    </template>
+                    <template lwc:if={showAddAll}>
+                        <lightning-menu-divider></lightning-menu-divider>
+                        <lightning-menu-item value={addAllValue} label="Add All Remaining Attributes"></lightning-menu-item>
+                    </template>
+                </lightning-button-menu>
+            </span>
+            <lightning-button class="slds-m-left_x-small" label="Add Group" icon-name="utility:add" onclick={handleAddGroup}></lightning-button>
+        </div>
+    </div>
+</template>

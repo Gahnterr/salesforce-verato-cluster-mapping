@@ -5,7 +5,6 @@ export default class GlobalShell extends LightningElement {
     @api navItems = [];
     @api currentAppVariant = 'standard';
     @api appItems = [];
-    @api pagesInCurrentApp = [];
     @api hideWaffle = false;
     @api colorMode = 'light';
     @api sldsVersion = 2;

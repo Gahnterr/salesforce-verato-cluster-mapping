@@ -1,19 +1,51 @@
 <template>
     <template lwc:if={hasCluster}>
-        <lightning-card title={title}>
-            <div class="slds-p-horizontal_medium">
-                <ui-cluster-mapping-form cluster-name={cluster.name} attributes={attributes}></ui-cluster-mapping-form>
+        <lightning-card class="c-mapping-card">
+            <div slot="title">
+                <div class="slds-grid slds-grid_vertical-align-center">
+                    <h2 class="slds-text-heading_medium">{title}</h2>
+                    <lightning-helptext lwc:if={exampleText} class="slds-m-left_xx-small" content={exampleText}></lightning-helptext>
+                </div>
+                <p class="slds-text-body_small slds-text-color_weak">{subtitle}</p>
+            </div>
+            <div class="c-mapping-layout">
+                <div class="c-mapping-scroll slds-p-horizontal_medium slds-p-bottom_medium">
+                    <div class="c-column-heading slds-m-bottom_x-small">
+                        <lightning-icon icon-name="standard:data_mapping" size="small" alternative-text="Mapping"></lightning-icon>
+                        <h3 class="slds-text-heading_small slds-text-color_default">Mapping</h3>
+                    </div>
+                    <ui-cluster-mapping-form
+                        mapping={cluster.mapping}
+                        issues={cluster.issues}
+                        attributes={attributes}
+                        onmappingchange={handleMappingChange}>
+                    </ui-cluster-mapping-form>
+                </div>
+                <div lwc:if={cluster.isMapped} class="c-view-filter-panel slds-p-horizontal_medium slds-p-bottom_medium">
+                    <div class="c-column-heading slds-m-bottom_x-small">
+                        <lightning-icon icon-name="standard:filter" size="small" alternative-text="View Filter"></lightning-icon>
+                        <h3 class="slds-text-heading_small">View Filter</h3>
+                    </div>
+                    <ui-cluster-mapping-view-filter
+                        attributes={attributes}
+                        cluster-name={cluster.name}
+                        multi-valued={isMultiValued}
+                        direction={cluster.mapping.direction}
+                        has-rules-before={hasRulesBefore}
+                        has-rules-after={hasRulesAfter}
+                        filter={cluster.mapping.viewFilter}
+                        onfilterchange={handleViewFilterChange}>
+                    </ui-cluster-mapping-view-filter>
+                </div>
             </div>
         </lightning-card>
     </template>
     <template lwc:else>
         <lightning-card>
-            <div class="slds-p-around_large slds-text-align_center">
-                <h2 class="slds-text-heading_medium slds-m-bottom_x-small">No cluster selected</h2>
-                <p class="slds-text-color_weak">
-                    Select a cluster from the list on the left bar to define its mapping configuration.
-                </p>
-            </div>
+            <ui-empty-state
+                title="No Cluster Selected"
+                message="Select a cluster from the list on the left bar to define its mapping configuration.">
+            </ui-empty-state>
         </lightning-card>
     </template>
 </template>

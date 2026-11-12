@@ -6,11 +6,69 @@
  *   clusters.domainId -> veratoDomains.id
  *   clusters.parentId -> clusters.id (nested clusters)
  *   syncEvents.changedClusterIds / payload.clusterId -> clusters.id
+ *   viewFilterChanges.clusterId -> clusters.id
  */
 
 import { CORE_PERSON_SCHEMA } from './corePersonSchema';
+import { CODE_SETS } from './codeSets';
+import { ATTRIBUTE_EXAMPLES } from './attributeExamples';
+import { defaultViewFilter } from './viewFilterDefaults';
 
 const isNestedCluster = (value) => typeof value === 'object' && value !== null;
+
+/**
+ * Mapping config of a cluster, as the form edits it. `shape` is 'inline' | 'typedSlots' | 'childObject';
+ * the child object fields only apply to the last. `attributes` is keyed by
+ * Verato attribute name, one entry per attribute row added to the grid:
+ * { mapTo: 'field' | 'static', field: Salesforce field API name | '', staticValue: '' }.
+ * `groups` holds attributes concatenated into one value: { id, name, members: [attribute names, in order],
+ * mapTo, field, staticValue, separators: { member: how it joins the next } }; a grouped attribute is no longer in `attributes`. `order` lists the grid's
+ * rows and groups as 'row|<attribute>' / 'group|<id>' keys, in the order they are shown.
+ */
+const emptyMapping = () => ({
+    shape: 'inline',
+    direction: 'inbound',
+    childObject: '',
+    childRelationship: '',
+    lookupToRoot: '',
+    matchKey: '',
+    attributes: {},
+    groups: [],
+    order: [],
+    viewFilter: defaultViewFilter()
+});
+
+/** A cluster's mapping state: the working copy plus the last saved snapshot, which tells if there are unsaved changes. */
+const unmappedState = () => ({
+    isMapped: false,
+    mapping: emptyMapping(),
+    hasUnsavedChanges: false,
+    issues: [],
+    savedState: { isMapped: false, mapping: emptyMapping() }
+});
+
+/** Clusters that start out saved as mapped, so the tree shows a mix of states. */
+const SAVED_MAPPINGS = {
+    'core-person:citizenships': {
+        shape: 'childObject',
+        direction: 'inbound',
+        childObject: 'Citizenship__c',
+        childRelationship: 'Citizenships__r',
+        lookupToRoot: 'Contact__c',
+        matchKey: 'External_Id__c',
+        attributes: { citizenship: { mapTo: 'field', field: 'Country__c', staticValue: '' } }
+    }
+};
+
+function withSavedMapping(cluster) {
+    const saved = SAVED_MAPPINGS[cluster.id];
+    if (!saved) {
+        return cluster;
+    }
+    const mapping = { ...saved, viewFilter: defaultViewFilter() };
+    const mappedCount = Object.keys(mapping.attributes).length;
+    return { ...cluster, isMapped: true, mapping, mappedCount, savedState: { isMapped: true, mapping } };
+}
 
 /** One cluster record per schema object, nested objects becoming child clusters. */
 function buildClustersFromSchema(domainId, schema, parent = null) {
@@ -18,7 +76,16 @@ function buildClustersFromSchema(domainId, schema, parent = null) {
         .filter(([, value]) => isNestedCluster(value))
         .flatMap(([name, value]) => {
             const path = parent ? `${parent.path}.${name}` : name;
-            const cluster = { id: `${domainId}:${path}`, domainId, parentId: parent ? parent.id : null, name, path };
+            const cluster = {
+                id: `${domainId}:${path}`,
+                domainId,
+                parentId: parent ? parent.id : null,
+                name,
+                path,
+                attributeCount: Object.values(value).filter((child) => !isNestedCluster(child)).length,
+                mappedCount: 0,
+                ...unmappedState()
+            };
             return [cluster, ...buildClustersFromSchema(domainId, value, cluster)];
         });
 }
@@ -30,7 +97,8 @@ function buildClusters(domainId, total) {
         domainId,
         parentId: null,
         name: `Cluster ${i + 1}`,
-        path: `cluster-${i + 1}`
+        path: `cluster-${i + 1}`,
+        ...unmappedState()
     }));
 }
 
@@ -67,6 +135,7 @@ const EVENT_ROWS = [
     ['Pat Demo4297', 'Patient Portal', 'sent', [C, B, N, P], [[C, 2], [B, 1], [N, 1], [P, 2]], 3, 2, 645, suffix(BATCH_1, 0xdc)],
     ['Pat Demo3174', 'Patient Portal', 'sent', [C, B, N, P], [[C, 2], [B, 1], [N, 1], [P, 2]], 1, 0, 767, suffix(BATCH_1, 0xdb)],
     ['REBECCA SMITH', 'Salesforce Contacts', 'sent', [B, N, P], [[B, 1], [N, 1]], 1, 0, 941, suffix(BATCH_1, 0xd9)],
+    ['Pat Demo6630', 'Patient Portal', 'failed', [N], [[N, 1]], 0, 1, 70000, suffix(BATCH_5, 0x22)],
     ['Pat Demo2210', 'Patient Portal', 'skipped', [C], [[C, 2], [B, 1], [N, 1], [P, 2]], 1, 1, 90000, suffix(BATCH_5, 0x21)],
     ['REBECCA SMITH', 'Salesforce Contacts', 'sent', [B, N, P], [[B, 1], [N, 1]], 1, 0, 155066, suffix(BATCH_2, 0x6a)],
     ['Jordan Lee', 'Salesforce Contacts', 'sent', [N, E], [[N, 1], [E, 1]], 1, 0, 214000, suffix(BATCH_6, 0x3c)],
@@ -109,6 +178,7 @@ export const SEED = {
     veratoDomains: [
         {
             id: 'core-person',
+            entity: 'person',
             name: 'Core Person',
             schema: CORE_PERSON_SCHEMA,
             createdDate: '2012-12-12T12:24:00',
@@ -117,6 +187,7 @@ export const SEED = {
         },
         {
             id: 'patient',
+            entity: 'person',
             name: 'Patient',
             createdDate: '2012-12-12T12:24:00',
             lastModifiedDate: '2012-12-12T12:24:00',
@@ -124,6 +195,7 @@ export const SEED = {
         },
         {
             id: 'member',
+            entity: 'person',
             name: 'Member',
             createdDate: '2012-12-12T12:24:00',
             lastModifiedDate: '2012-12-12T12:24:00',
@@ -131,9 +203,18 @@ export const SEED = {
         }
     ],
     clusters: [
-        ...buildClustersFromSchema('core-person', CORE_PERSON_SCHEMA),
+        ...buildClustersFromSchema('core-person', CORE_PERSON_SCHEMA).map(withSavedMapping),
         ...buildClusters('patient', 12),
         ...buildClusters('member', 4)
     ],
-    syncEvents: SYNC_EVENTS
+    // Who last saved cluster mapping changes, and when (a single record).
+    clusterMappingEdits: [
+        { id: 'last-edit', editedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), editedBy: 'Eduardo Garcia' }
+    ],
+    codeSets: CODE_SETS,
+    // Example value of each attribute: attributeExamples.id = '<domainId>:<cluster path>.<attribute>'.
+    attributeExamples: ATTRIBUTE_EXAMPLES,
+    syncEvents: SYNC_EVENTS,
+    // Log of every saved change to a cluster's view filter (the filter itself is part of the cluster's mapping); starts empty.
+    viewFilterChanges: []
 };

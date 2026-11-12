@@ -1,0 +1,11 @@
+<template>
+    <div class={computedClass}>
+        <img class="slds-illustration__svg" src={illustrationSrc} alt="" aria-hidden="true" />
+        <div class="c-text">
+            <h3 class="slds-illustration__header c-title">{title}</h3>
+            <p lwc:if={message} class="c-message">{message}</p>
+        </div>
+        <!-- Optional main action, e.g. a brand button; the slotted element brings its own top margin. -->
+        <slot name="actions"></slot>
+    </div>
+</template>

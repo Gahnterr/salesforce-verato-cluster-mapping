@@ -86,7 +86,7 @@ export default class App extends LightningElement {
         return this.isVerticalNavOn ? 'app-root app-root_with-vertical-nav' : 'app-root';
     }
 
-    /** Pages exposed in the current app's primary nav (Standard tabs). */
+    /** Pages exposed in the current app's primary nav tabs. */
     get navItems() {
         const app = getAppById(this._currentApp) || getAppById(DEFAULT_APP_ID);
         return app.pages
@@ -96,20 +96,6 @@ export default class App extends LightningElement {
                 const path = r.navPath ?? r.path;
                 return { page: r.navPage, label: r.navLabel, path, href: linkHref(path) };
             });
-    }
-
-    /**
-     * Pages in the current app, shaped for the Console object switcher menu:
-     * label, icon, and an isCurrent flag to drive the selected indicator.
-     */
-    get pagesInCurrentApp() {
-        const current = this.currentNavPage;
-        return this.navItems.map((item) => ({
-            page: item.page,
-            label: item.label,
-            href: item.href,
-            isCurrent: item.page === current,
-        }));
     }
 
     /** All apps for the App Launcher (waffle), with isCurrent flag and href to defaultPath. */

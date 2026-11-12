@@ -1,0 +1,33 @@
+:host {
+    display: block;
+    min-height: 0;
+}
+
+/*
+ * The card's own markup can't be styled from here, so the card host is a grid: its article
+ * stretches to the host's height. global.css (.c-tree-card) passes that height down to the
+ * card body, so only .c-tree-list scrolls and the header and search box stay put.
+ */
+lightning-card {
+    display: grid;
+    height: 100%;
+    overflow: hidden;
+}
+
+.c-tree-panel {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.c-tree-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+/* Only default-variant icons read this hook (the chevrons don't), i.e. the "unsaved changes" icon. */
+lightning-tree {
+    --slds-c-icon-color-foreground-default: var(--slds-g-color-accent-2, #0250d9);
+}

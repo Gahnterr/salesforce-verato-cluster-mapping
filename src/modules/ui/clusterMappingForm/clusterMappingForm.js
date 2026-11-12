@@ -1,15 +1,20 @@
 import { LightningElement, api } from 'lwc';
 
-const SHAPE_OPTIONS = [{ label: 'Child object (capacity all)', value: 'child' }];
-const DIRECTION_OPTIONS = [{ label: 'Both', value: 'both' }];
-const SALESFORCE_FIELD_OPTIONS = [{ label: '— none —', value: 'none' }];
+const DIRECTION_OPTIONS = [
+    { label: 'Inbound', value: 'inbound', help: 'From Verato MDM Cloud to Salesforce.' },
+    { label: 'Outbound', value: 'outbound', help: 'From Salesforce to Verato MDM Cloud.' },
+    { label: 'Both', value: 'both', help: 'Between Salesforce and Verato MDM Cloud.' }
+];
 
 /**
- * Placeholder for the cluster mapping form. Nothing here is wired up yet;
- * only the attribute rows come from data (the cluster's schema attributes).
+ * Cluster mapping form: direction, child object and the attributes grid. Controlled: shows `mapping` and reports every edit as
+ * a `mappingchange` event ({ mapping }); the owner stores and validates it.
  */
 export default class ClusterMappingForm extends LightningElement {
-    @api clusterName = '';
+    /** Working mapping config (see the clusters seed data for its shape). */
+    @api mapping;
+    /** Validation problems of the working mapping ({ target, message }), shown inline by the elements they name. */
+    @api issues = [];
 
     _attributes = [];
 
@@ -21,14 +26,26 @@ export default class ClusterMappingForm extends LightningElement {
         this._attributes = Array.isArray(value) ? value : [];
     }
 
-    shapeOptions = SHAPE_OPTIONS;
-    directionOptions = DIRECTION_OPTIONS;
-    fieldOptions = SALESFORCE_FIELD_OPTIONS;
+    directionOptions = DIRECTION_OPTIONS.map(({ label, value }) => ({ label, value }));
 
-    get rows() {
-        return this._attributes.map((attribute) => ({
-            key: attribute.name,
-            label: `${attribute.name} · ${attribute.type}`
-        }));
+    get directionHelp() {
+        return DIRECTION_OPTIONS.find((option) => option.value === this.mapping.direction).help;
+    }
+
+    emit(mapping) {
+        this.dispatchEvent(new CustomEvent('mappingchange', { detail: { mapping } }));
+    }
+
+    handleDirection(event) {
+        this.emit({ ...this.mapping, direction: event.detail.value });
+    }
+
+    /** The child object part reports the whole mapping, so its edit is passed on as is. */
+    handleChildObject(event) {
+        this.emit(event.detail.mapping);
+    }
+
+    handleAttributes(event) {
+        this.emit({ ...this.mapping, attributes: event.detail.attributes, groups: event.detail.groups, order: event.detail.order });
     }
 }

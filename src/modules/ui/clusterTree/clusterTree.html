@@ -1,25 +1,37 @@
 <template>
-    <lightning-card title="Clusters">
-        <div class="slds-p-horizontal_medium slds-p-bottom_medium">
-            <lightning-input
-                type="search"
-                label="Search domains or clusters"
-                variant="label-hidden"
-                placeholder="Search domains or clusters..."
-                onchange={handleSearch}>
-            </lightning-input>
-            <template lwc:if={hasItems}>
-                <lightning-tree
-                    lwc:ref="tree"
-                    class="slds-m-top_small"
-                    items={items}
-                    selected-item={selectedId}
-                    onselect={handleSelect}>
-                </lightning-tree>
+    <lightning-card class="c-tree-card">
+        <div slot="title">
+            <h2 class="slds-text-heading_medium">Clusters</h2>
+            <p class="slds-text-body_small slds-text-color_weak">{mappedSummary}</p>
+        </div>
+        <div class="c-tree-panel">
+            <div class="slds-p-horizontal_medium">
+                <lightning-input
+                    type="search"
+                    label="Search domains or clusters"
+                    variant="label-hidden"
+                    placeholder="Search domains or clusters..."
+                    onchange={handleSearch}>
+                </lightning-input>
+            </div>
+            <div class="c-tree-list slds-p-horizontal_medium slds-p-bottom_medium">
+            <template lwc:if={hasGroups}>
+                <template for:each={groups} for:item="group">
+                    <lightning-tree
+                        key={group.id}
+                        class="slds-show slds-m-top_small"
+                        header={group.header}
+                        data-issues={group.issueCount}
+                        items={group.items}
+                        selected-item={selectedId}
+                        onselect={handleSelect}>
+                    </lightning-tree>
+                </template>
             </template>
             <template lwc:else>
-                <p class="slds-m-top_small slds-text-color_weak">No matching clusters</p>
+                <ui-empty-state title="No matching clusters"></ui-empty-state>
             </template>
+            </div>
         </div>
     </lightning-card>
 </template>

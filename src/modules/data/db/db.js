@@ -7,7 +7,7 @@ import { SEED } from './seed';
  */
 
 // Bump when the shape of SEED changes so stale browser copies are discarded.
-const DB_VERSION = 5;
+const DB_VERSION = 14;
 const STORAGE_KEY = `verato-mock-db-v${DB_VERSION}`;
 
 function clone(value) {
@@ -34,6 +34,8 @@ function persist(db) {
     }
 }
 
+export { defaultViewFilter } from './viewFilterDefaults';
+
 let db = load();
 
 export function getAll(table) {
@@ -45,6 +47,12 @@ export function upsert(table, record) {
     const rows = db[table] ?? [];
     const index = rows.findIndex((row) => row.id === record.id);
     db[table] = index === -1 ? [...rows, clone(record)] : rows.map((row, i) => (i === index ? clone(record) : row));
+    persist(db);
+}
+
+/** Replace every record of a table. */
+export function replaceAll(table, records) {
+    db[table] = clone(records);
     persist(db);
 }
 

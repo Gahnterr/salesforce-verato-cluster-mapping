@@ -1,0 +1,14 @@
+:host {
+    display: block;
+}
+
+/* The four fields sit two by two; each column is at least 12rem wide, so a narrow container stacks them instead. */
+.c-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: var(--slds-g-spacing-3, 0.75rem) var(--slds-g-spacing-4, 1rem);
+}
+
+.slds-form-element__label {
+    width: 100%;
+}

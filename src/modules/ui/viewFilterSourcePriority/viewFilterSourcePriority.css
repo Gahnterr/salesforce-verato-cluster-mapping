@@ -1,0 +1,85 @@
+:host {
+    display: block;
+}
+
+.c-title {
+    font-size: var(--slds-g-font-size-base, 0.8125rem);
+    font-weight: var(--slds-g-font-weight-6, 600);
+    color: var(--slds-g-color-on-surface-2, #2e2e2e);
+}
+
+/* The menu is placed against the search box, under it. */
+.c-search {
+    position: relative;
+}
+
+.c-message {
+    padding: var(--slds-g-spacing-3, 0.75rem) var(--slds-g-spacing-4, 1rem);
+}
+
+.c-searching {
+    display: flex;
+    align-items: center;
+    gap: var(--slds-g-spacing-2, 0.5rem);
+}
+
+/* lightning-spinner fills its positioned parent, so this box gives it a small one. */
+.c-spinner {
+    position: relative;
+    display: inline-block;
+    inline-size: var(--slds-g-sizing-5, 1.5rem);
+    block-size: var(--slds-g-sizing-5, 1.5rem);
+}
+
+.c-help {
+    font-size: var(--slds-g-font-scale-neg-1, 0.75rem);
+    color: var(--slds-g-color-on-surface-1, #5c5c5c);
+}
+
+/* Rows are divided by a line, with a line above the first one too. */
+.c-list {
+    border-top: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, #c9c9c9);
+}
+
+.c-list__row,
+.c-list__empty {
+    display: flex;
+    align-items: center;
+    gap: var(--slds-g-spacing-2, 0.5rem);
+    padding: var(--slds-g-spacing-2, 0.5rem);
+    border-bottom: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, #c9c9c9);
+}
+
+.c-list__name {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.c-handle {
+    display: inline-flex;
+    cursor: grab;
+}
+
+/* A dragged row is dimmed; the row it would land next to gets an accent line on the side it would land on. */
+.c-row_dragging {
+    opacity: 0.6;
+    background-color: var(--slds-g-color-surface-container-2, #f3f3f3);
+}
+
+.c-row_drop-before {
+    box-shadow: inset 0 var(--slds-g-sizing-border-2, 2px) 0 0 var(--slds-g-color-border-accent-1, #066afe);
+}
+
+.c-row_drop-after {
+    box-shadow: inset 0 calc(-1 * var(--slds-g-sizing-border-2, 2px)) 0 0 var(--slds-g-color-border-accent-1, #066afe);
+}
+
+/* The picked-up copy of a row that the browser draws under the pointer; kept out of sight until it is captured. */
+.c-drag-image {
+    position: fixed;
+    inset-block-start: calc(-1 * var(--slds-g-sizing-10, 100vh));
+    background-color: var(--slds-g-color-surface-container-1, #ffffff);
+    border: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, #c9c9c9);
+    border-radius: var(--slds-g-radius-border-2, 0.5rem);
+    box-shadow: var(--slds-g-shadow-2, 0 2px 4px rgba(0, 0, 0, 0.16));
+}

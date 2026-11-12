@@ -2,35 +2,43 @@
     <div>
         <ui-page-header
             variant="record-home"
-            icon-name="standard:account"
-            title="History"
-            show-subtitle>
-            <span slot="subtitle">
-                <span class="slds-show">
-                    {eventCountText}
-                    <span class="slds-m-horizontal_xx-small" aria-hidden="true">&bull;</span>
-                    <ui-relative-time prefix="Last updated" timestamp={lastUpdated}></ui-relative-time>
-                </span>
-                <span lwc:if={hasSkipped} class="slds-show c-skipped">
-                    <lightning-icon
-                        class="slds-m-right_xx-small"
-                        icon-name="utility:warning"
-                        variant="warning"
-                        size="xx-small"
-                        alternative-text="Warning">
-                    </lightning-icon>
-                    <span class="c-skipped__text slds-m-right_xx-small">{skippedText}</span>
-                    <lightning-button variant="base" label="View skipped records" onclick={handleViewSkipped}></lightning-button>
-                </span>
-            </span>
-            <lightning-button-icon
-                slot="actions"
-                icon-name="utility:refresh"
-                variant="border-filled"
-                alternative-text="Refresh history"
-                title="Refresh history"
-                onclick={refresh}>
-            </lightning-button-icon>
+            icon-name="standard:recent"
+            title="Log"
+            show-subtitle
+            show-middle>
+            <span slot="subtitle">{eventCountText}</span>
+            <div slot="middle" class="c-kpis">
+                <template for:each={statusCards} for:item="card">
+                    <button
+                        key={card.value}
+                        type="button"
+                        class={card.className}
+                        aria-pressed={card.isActive}
+                        title={card.title}
+                        data-status={card.value}
+                        onclick={handleStatusCard}>
+                        <span class="c-kpi__label">
+                            <lightning-icon class={card.iconClass} icon-name={card.iconName} size={card.iconSize} alternative-text=""></lightning-icon>
+                            <span class="c-kpi__name">{card.label}</span>
+                        </span>
+                        <span class="c-kpi__count">{card.count}</span>
+                    </button>
+                </template>
+            </div>
+            <div slot="actions" class="slds-grid slds-grid_vertical slds-grid_vertical-align-end">
+                <lightning-button-icon
+                    icon-name="utility:refresh"
+                    variant="border-filled"
+                    alternative-text="Refresh history"
+                    title="Refresh history"
+                    onclick={refresh}>
+                </lightning-button-icon>
+                <ui-relative-time
+                    class="slds-text-body_small slds-text-color_weak slds-m-top_x-small"
+                    prefix="Last updated"
+                    timestamp={lastUpdated}>
+                </ui-relative-time>
+            </div>
         </ui-page-header>
 
         <div class="c-layout">
@@ -47,9 +55,7 @@
                     columns={columns}
                     hide-checkbox-column>
                 </ui-history-table>
-                <p lwc:if={hasNoRows} class="slds-p-around_medium slds-text-color_weak">
-                    No events match these filters.
-                </p>
+                <ui-empty-state lwc:if={hasNoRows} title="No events match these filters."></ui-empty-state>
             </div>
         </div>
     </div>

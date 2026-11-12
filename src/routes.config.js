@@ -23,9 +23,9 @@ export const routes = [
   {
     path: '/history',
     component: 'page-history',
-    title: 'History',
+    title: 'Log',
     navPage: 'history',
-    navLabel: 'History',
+    navLabel: 'Log',
   },
   {
     path: '/',

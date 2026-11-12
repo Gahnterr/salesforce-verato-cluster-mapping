@@ -23,3 +23,84 @@ html.builder-active {
 .lightning-button-menu_custom .slds-button_icon-container-more {
     line-height: inherit;
 }
+
+/*
+ * lightning-tree puts a row's end icon right after its label. Under synthetic shadow
+ * this global rule reaches inside the tree, so push the icon to the row's right edge,
+ * which lines the icons up in one column.
+ */
+lightning-tree-item .content-with-end-icon + span {
+    margin-left: auto;
+    margin-right: 8px;
+}
+
+/*
+ * lightning-tree headers are plain text, so a domain's issues indicator is drawn here: the
+ * domain's tree carries data-issues when any of its clusters has issues, and --c-domain-issues
+ * (a quoted string) with the count, since a pseudo-element can't read the tree's attributes. The icon
+ * is the SLDS warning glyph used as a mask, so it takes the warning text color.
+ */
+lightning-tree[data-issues] .slds-tree__group-header {
+    display: flex;
+    align-items: center;
+}
+
+lightning-tree[data-issues] .slds-tree__group-header::before {
+   content: "";
+order: 2;
+margin-left: 0px;
+margin-right: 8px;
+inline-size: 0.875rem;
+block-size: 0.875rem;
+background-color: var(--slds-g-color-on-warning-1, #8c4b02);
+mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 520'%3E%3Cpath d='M514 425 285 55a28 28 0 0 0-50 0L6 425c-14 23 0 55 25 55h458c25 0 40-32 25-55m-254-25c-17 0-30-13-30-30s13-30 30-30 30 13 30 30-13 30-30 30m30-90c0 6-4 10-10 10h-40c-6 0-10-4-10-10V180c0-6 4-10 10-10h40c6 0 10 4 10 10z'/%3E%3C/svg%3E") center center / contain no-repeat;
+mask-size: contain;
+mask-composite: add;
+mask-mode: match-source;
+}
+
+lightning-tree[data-issues] .slds-tree__group-header::after {
+    content: var(--c-domain-issues);
+    order: 1;
+    margin-left: auto;
+    margin-right: 4px;
+    color: var(--slds-g-color-on-warning-1, #8c4b02);
+}
+
+/*
+ * The cluster tree card's header and search box stay fixed while only its tree list scrolls
+ * (see clusterTree.css); the cluster mapping card does the same with its header and form (see clusterMappingCard.css). That needs the card's article and body, which only a global rule
+ * can reach, to be a column whose body takes the remaining height.
+ */
+lightning-card.c-tree-card .slds-card,
+lightning-card.c-mapping-card .slds-card {
+    display: flex;
+    flex-direction: column;
+    block-size: 100%;
+    min-block-size: 0;
+}
+
+lightning-card.c-tree-card .slds-card__body,
+lightning-card.c-mapping-card .slds-card__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-block-size: 0;
+}
+
+/* Each domain's header sticks to the top of the cluster tree's scrolling list while its clusters are in view. */
+.c-tree-list lightning-tree .slds-tree__group-header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 1;
+    background-color: var(--slds-g-color-surface-container-1, #fff);
+}
+
+.direction-radio-group .slds-form-element__legend.slds-form-element__label {
+    font-size: 13px;
+}
+
+/* The view filter's YAML editor: a monospace font for the text area (its hooks, in clusterMappingViewFilter.css, set the colors). */
+.c-yaml textarea {
+    font-family: var(--slds-g-font-family-monospace, monospace);
+}

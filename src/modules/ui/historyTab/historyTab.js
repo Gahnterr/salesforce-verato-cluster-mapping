@@ -4,11 +4,11 @@ import { getAllClusters } from 'data/clusters';
 import { getAllVeratoDomains } from 'data/veratoDomains';
 import {
     ALL,
-    DEFAULT_FILTERS,
     applyFilters,
     loadFilters,
     periodLabel,
-    saveFilters
+    saveFilters,
+    STATUSES
 } from 'data/historyFilters';
 
 const COLUMNS = [
@@ -27,7 +27,19 @@ const COLUMNS = [
     { label: 'Link ID', fieldName: 'linkId', initialWidth: 195, cellAttributes: { class: 'slds-text-font_monospace' } }
 ];
 
-const STATUS_THEMES = { sent: 'slds-theme_success', skipped: 'slds-theme_info' };
+const STATUS_THEMES = {
+    pending: 'slds-theme_warning',
+    sent: 'slds-theme_success',
+    skipped: 'slds-theme_info',
+    failed: 'slds-theme_error'
+};
+
+const STATUS_ICONS = {
+    pending: 'standard:today',
+    sent: 'action:check',
+    skipped: 'standard:outcome',
+    failed: 'action:close'
+};
 
 /**
  * "History" tab: a log of records sent to (or skipped for) Verato MDM Cloud, so users can watch
@@ -94,19 +106,31 @@ export default class HistoryTab extends LightningElement {
         return `${count} event${count === 1 ? '' : 's'} in the ${periodLabel(this.filters)}`;
     }
 
-    /** Skipped events within the chosen period, whatever the other filters say. */
-    get skippedCount() {
-        return applyFilters(this.events, { ...DEFAULT_FILTERS, period: this.filters.period, startDate: this.filters.startDate, endDate: this.filters.endDate, statuses: ['skipped'] })
-            .length;
-    }
-
-    get hasSkipped() {
-        return this.skippedCount > 0;
-    }
-
-    get skippedText() {
-        const count = this.skippedCount;
-        return `${count} record${count === 1 ? '' : 's'} skipped in the ${periodLabel(this.filters)}.`;
+    /**
+     * One KPI card per status. Counts follow every filter except status, so the cards keep
+     * showing what each status would add; the card matching the status filter is highlighted.
+     */
+    get statusCards() {
+        const counts = applyFilters(this.events, { ...this.filters, statuses: STATUSES.map((s) => s.value) }).reduce(
+            (totals, event) => ({ ...totals, [event.status]: (totals[event.status] ?? 0) + 1 }),
+            {}
+        );
+        const onlyStatus = this.filters.statuses.length === 1 ? this.filters.statuses[0] : null;
+        return STATUSES.map(({ value, label }) => {
+            const isActive = onlyStatus === value;
+            return {
+                value,
+                label,
+                count: counts[value] ?? 0,
+                iconName: STATUS_ICONS[value],
+                iconClass: `c-kpi__icon c-kpi__icon_${value}`,
+                // Action icons draw their own padded circle; standard icons fill the whole size.
+                iconSize: STATUS_ICONS[value].startsWith('action:') ? 'x-small' : 'medium',
+                isActive,
+                title: `Show only ${label.toLowerCase()} events`,
+                className: isActive ? 'c-kpi c-kpi_active' : 'c-kpi'
+            };
+        });
     }
 
     // ---- Events ---------------------------------------------------------------
@@ -116,7 +140,7 @@ export default class HistoryTab extends LightningElement {
         saveFilters(this.filters);
     }
 
-    handleViewSkipped() {
-        this.handleFilterChange({ detail: { ...this.filters, statuses: ['skipped'] } });
+    handleStatusCard(event) {
+        this.handleFilterChange({ detail: { ...this.filters, statuses: [event.currentTarget.dataset.status] } });
     }
 }

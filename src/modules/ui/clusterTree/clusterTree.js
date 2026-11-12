@@ -14,6 +14,24 @@ function fuzzyMatch(query, text) {
     return true;
 }
 
+const MAPPED_ICON = { iconName: 'utility:success', variant: 'success', alternativeText: 'Mapped' };
+// No blue icon variant exists; clusterTree.css colors the default variant with an accent hook.
+// The variant is explicit because the tree reuses icon elements and would keep a previous one.
+const CHANGED_ICON = { iconName: 'utility:edit', variant: '', alternativeText: 'Unsaved changes' };
+const ISSUES_ICON = { iconName: 'utility:warning', variant: 'warning', alternativeText: 'Has issues that prevent saving' };
+
+/**
+ * Trailing tree icon from the cluster's mapping state: unsaved changes show
+ * whether they can be saved (edit) or not (warning); otherwise a mapped
+ * cluster shows a check and an unmapped one nothing.
+ */
+function statusIcon({ isMapped, hasUnsavedChanges, issues }) {
+    if (hasUnsavedChanges) {
+        return issues.length > 0 ? ISSUES_ICON : CHANGED_ICON;
+    }
+    return isMapped ? MAPPED_ICON : null;
+}
+
 export default class ClusterTree extends LightningElement {
     @api selectedId = '';
 
@@ -39,19 +57,46 @@ export default class ClusterTree extends LightningElement {
         this._clusters = Array.isArray(value) ? value : [];
     }
 
-    get items() {
+    /**
+     * One tree per domain, so the domain name can be the tree's own (non-collapsible) header.
+     * A domain with no matching clusters is left out.
+     */
+    get groups() {
         return this._domains
-            .map((domain) => {
-                const children = this.buildClusterItems(domain, null);
-                return children.length > 0
-                    ? { label: domain.name, name: domain.id, expanded: this.isSearching, items: children }
-                    : null;
-            })
-            .filter(Boolean);
+            .map((domain) => ({ id: domain.id, header: this.domainHeader(domain), issueCount: this.issueCount(domain), items: this.buildClusterItems(domain, null) }))
+            .filter((group) => group.items.length > 0);
     }
 
-    get hasItems() {
-        return this.items.length > 0;
+    /** "Core Person (23/59)": clusters mapped out of all clusters in the domain, however deeply nested. */
+    domainHeader(domain) {
+        const clusters = this._clusters.filter((cluster) => cluster.domainId === domain.id);
+        const mapped = clusters.filter((cluster) => cluster.isMapped).length;
+        return `${domain.name} (${mapped}/${clusters.length})`;
+    }
+
+    /** Issues across all of a domain's clusters at any depth, or null (no attribute) when there are none. */
+    issueCount(domain) {
+        const count = this._clusters
+            .filter((cluster) => cluster.domainId === domain.id)
+            .reduce((total, cluster) => total + cluster.issues.length, 0);
+        return count > 0 ? String(count) : null;
+    }
+
+    /** All clusters under a cluster, at any depth. */
+    nestedClusters(cluster) {
+        return this._clusters
+            .filter((candidate) => candidate.parentId === cluster.id)
+            .flatMap((child) => [child, ...this.nestedClusters(child)]);
+    }
+
+    /** "23/59 Clusters Mapped": every cluster in every domain, at any nesting depth; ignores the search. */
+    get mappedSummary() {
+        const mapped = this._clusters.filter((cluster) => cluster.isMapped).length;
+        return `${mapped}/${this._clusters.length} Clusters Mapped`;
+    }
+
+    get hasGroups() {
+        return this.groups.length > 0;
     }
 
     get isSearching() {
@@ -75,7 +120,14 @@ export default class ClusterTree extends LightningElement {
                 if (!matches && children.length === 0) {
                     return null;
                 }
-                const item = { label: cluster.name, name: cluster.id, expanded: this.isSearching && children.length > 0 };
+                // "(3/6)" = nested clusters mapped; only clusters that have nested clusters show it.
+                const nested = this.nestedClusters(cluster);
+                const counts = nested.length > 0 ? ` (${nested.filter((n) => n.isMapped).length}/${nested.length})` : '';
+                const item = { label: `${cluster.name}${counts}`, name: cluster.id, expanded: this.isSearching && children.length > 0 };
+                const endIcon = statusIcon(cluster);
+                if (endIcon) {
+                    item.endIcon = endIcon;
+                }
                 if (children.length > 0) {
                     item.items = children;
                 }
@@ -84,17 +136,23 @@ export default class ClusterTree extends LightningElement {
             .filter(Boolean);
     }
 
+    renderedCallback() {
+        // The header's counter is drawn by global.css from this custom property (see the data-issues rule there).
+        this.template.querySelectorAll('lightning-tree').forEach((tree) => {
+            const count = tree.dataset.issues;
+            if (count) {
+                tree.style.setProperty('--c-domain-issues', `"${count}"`);
+            } else {
+                tree.style.removeProperty('--c-domain-issues');
+            }
+        });
+    }
+
     handleSearch(event) {
         this.searchTerm = event.target.value.trim();
     }
 
     handleSelect(event) {
-        const { name } = event.detail;
-        if (this._domains.some((domain) => domain.id === name)) {
-            // Domain headers only expand/collapse; keep the current cluster highlighted.
-            this.refs.tree.selectedItem = this.selectedId || null;
-            return;
-        }
-        this.dispatchEvent(new CustomEvent('clusterselect', { detail: { id: name } }));
+        this.dispatchEvent(new CustomEvent('clusterselect', { detail: { id: event.detail.name } }));
     }
 }

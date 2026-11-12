@@ -76,11 +76,24 @@
 
 /* Main content area: fills wrapper and scrolls */
 .app-main {
+    display: flex;
+    flex-direction: column;
     flex: 1 1 0;
     min-height: 0;
     min-width: 0;
     overflow: auto;
     position: relative;
+}
+
+/* Lets a page fill the area's height (height: 100%); taller pages still scroll .app-main. */
+.app-main__inner {
+    flex: 1 0 auto;
+    height: 100%;
+}
+
+.app-main__inner > * {
+    display: block;
+    height: 100%;
 }
 
 .slds-section {
